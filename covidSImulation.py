@@ -3,15 +3,15 @@ import numpy as np
 import random as rdm
 import math
 
-populationNumber = int(input("Enter the Population..."))
-numDays = int(input("Enter the number of days..."))
-intInfected = int(input("Number of Initial infected people..."))
-numInGatherings = int(input("Number of people in gatherings..."))
+populationNumber =  1000  #int(input("Enter the Population..."))
+numDays =  250  #int(input("Enter the number of days..."))
+intInfected =  5  #int(input("Number of Initial infected people..."))
+numInGatherings =  4  #int(input("Number of people in gatherings..."))
 chanceInfect = 0.1  #int(input("Chance of infection with a one to one ineraction(In percents)..."))
-chanceBadC = 0.8
-chanceWorse = 0.1
-chanceInfectCured = 0.1
-mortalRate = 0.2
+chanceBadC = 0.6
+chanceWorse = 0.0
+chanceInfectCured = 0.3
+mortalRate = 0.1
 qurantine = True
 chanceQuarintine = 0.9
 #testAccuracy = 0.7
@@ -23,7 +23,11 @@ gathering = []
 quarantined = []
 yaxis = []
 xaxis = []
-dead = 0
+badConditions = []
+dead = []
+tillNowDeath = 0
+alives = []
+totalDeath = 0
 
 class Person():
 
@@ -159,6 +163,7 @@ for days in range(numDays):
 
 
     numCororna = 0
+    badPeople = 0
 
     for x in range(numGatherings):
 
@@ -179,11 +184,19 @@ for days in range(numDays):
     population = population + helpPop
     helpPop[:] = []
 
+    deads = 0
     #######
     #Checks
     for x in quarantined:
         x.doesKnow()
         x.doesDie()
+        if x.corona:
+            numCororna = numCororna + 1
+        if x.badC:
+            badPeople = badPeople + 1
+        if not x.alive:
+            quarantined.remove(x)
+            deads = deads + 1
         if not x.corona:
             quarantined.remove(x)
             population.append(x)
@@ -195,7 +208,7 @@ for days in range(numDays):
         x.doesDie()
         if not x.alive:
             population.remove(x)
-            dead = dead + 1
+            deads = deads + 1
 
         try:
             if x.identified:
@@ -205,6 +218,8 @@ for days in range(numDays):
             pass
         if x.corona:
             numCororna = numCororna + 1
+        if x.badC:
+            badPeople = badPeople + 1
 
 
         #corona => effective
@@ -214,19 +229,41 @@ for days in range(numDays):
     ######
     #gathering data
     yaxis.append(numCororna)
+    badConditions.append(badPeople)
     xaxis.append(days + 1)
+    dead.append(deads)
+
+    for x in dead:
+        totalDeath = totalDeath + x
+    
+    alives.append(1000 - totalDeath)
+    totalDeath = 0
+
+
 
     ######s
     #A day passes
     print("End of day " + str(days + 1))
-    print("Dead : " + str(dead))
 
+
+for x in dead:
+    totalDeath = totalDeath + x
+
+print("Dead : " + str(totalDeath))
+########
+#plotting
 plt.xlabel("Days")
 plt.ylabel("Infected")
 plt.title("Virus Spreading")
-plt.plot(xaxis, yaxis)
+plt.bar(xaxis, alives, width=1, color="green", label = "Alive")
+plt.bar(xaxis, yaxis, width=1, color="yellow", label = "Infected")
+plt.bar(xaxis, badConditions, width=1, color="orange", label = "Critical Condition")
+plt.bar(xaxis, dead, width = 1, color = 'red', label = "Dead")
 plt.grid(True)
+plt.legend()
 plt.show()
+
+
 
 
 ###plot quarintined, dead, badC, 
