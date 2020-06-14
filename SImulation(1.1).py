@@ -12,12 +12,15 @@ chanceBadC = 0.8
 chanceWorse = 0.1
 chanceInfectCured = 0.1
 mortalRate = 0.2
+qurantine = True
+chanceQuarintine = 0.9
 #testAccuracy = 0.7
 
 
 population = []
 helpPop = []
 gathering = []
+quarantined = []
 yaxis = []
 xaxis = []
 dead = 0
@@ -33,15 +36,16 @@ class Person():
     badC = False
     identified = False
     isCured = False
-    tillId = 2
-    tillResult = 12
+    tillId = 5
+    tillResult = 14
 
     def cured(self):
         self.corona = False
         self.effective = False
+        self.identified = False
         self.badC = False
-        self.tillId = 2
-        self.tillResult = 12
+        self.tillId = 5
+        self.tillResult = 14
         self.isCured = True
         
 
@@ -50,7 +54,12 @@ class Person():
     def doesKnow(self):
         if self.badC and (self.tillResult > self.tillId) and self.alive:           
             if self.tillId == 0:
-                self.identified = True
+
+                if qurantine:
+                    if rdm.random() < chanceQuarintine:
+                        self.identified = True
+
+
                 self.tillResult = self.tillResult - 1
             else:
                 self.tillId = self.tillId - 1
@@ -172,6 +181,15 @@ for days in range(numDays):
 
     #######
     #Checks
+    for x in quarantined:
+        x.doesKnow()
+        x.doesDie()
+        if not x.corona:
+            quarantined.remove(x)
+            population.append(x)
+
+
+    #######
     for x in population:
         x.doesKnow()
         x.doesDie()
@@ -179,6 +197,12 @@ for days in range(numDays):
             population.remove(x)
             dead = dead + 1
 
+        try:
+            if x.identified:
+                population.remove(x)
+                quarantined.append(x)
+        except:
+            pass
         if x.corona:
             numCororna = numCororna + 1
 
@@ -200,11 +224,10 @@ for days in range(numDays):
 plt.xlabel("Days")
 plt.ylabel("Infected")
 plt.title("Virus Spreading")
-plt.plot(xaxis, yaxis, 'bs')
+plt.plot(xaxis, yaxis)
 plt.grid(True)
 plt.show()
 
 
-for x in population:
-    print(x.isCured, x.effective)
+###plot quarintined, dead, badC, 
 
