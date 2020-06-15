@@ -5,16 +5,18 @@ import math
 
 populationNumber =  1000  #int(input("Enter the Population..."))
 numDays =  250  #int(input("Enter the number of days..."))
-intInfected =  5  #int(input("Number of Initial infected people..."))
+intInfected =  10  #int(input("Number of Initial infected people..."))
 numInGatherings =  4  #int(input("Number of people in gatherings..."))
 chanceInfect = 0.1  #int(input("Chance of infection with a one to one ineraction(In percents)..."))
 chanceBadC = 0.6
-chanceWorse = 0.0
+chanceWorse = 0.01
 chanceInfectCured = 0.3
 mortalRate = 0.1
-qurantine = True
+qurantine = False
 chanceQuarintine = 0.9
-#testAccuracy = 0.7
+testing = False
+testAccuracy = 0.9
+testSize = 15
 
 
 population = []
@@ -25,7 +27,6 @@ yaxis = []
 xaxis = []
 badConditions = []
 dead = []
-tillNowDeath = 0
 alives = []
 totalDeath = 0
 
@@ -40,16 +41,16 @@ class Person():
     badC = False
     identified = False
     isCured = False
-    tillId = 5
-    tillResult = 14
+    tillId = 4
+    tillResult = 12
 
     def cured(self):
         self.corona = False
         self.effective = False
         self.identified = False
         self.badC = False
-        self.tillId = 5
-        self.tillResult = 14
+        self.tillId = 4
+        self.tillResult = 12
         self.isCured = True
         
 
@@ -187,19 +188,44 @@ for days in range(numDays):
     deads = 0
     #######
     #Checks
+    if testing:
+        try:
+            for x in range(testSize):
+                y = rdm.randint(0, testSize - 1)
+                if population[y].corona and not population[y].identified:
+                    if rdm.random() < testAccuracy:
+                        population[y].identified = True
+
+                
+
+        except:
+            for x in range(len(population)):
+                y = rdm.randint(0, len(population) - 1)
+                if population[y].corona and not population[y].identified:
+                    if rdm.random() < testAccuracy:
+                        population[y].identified = True
+
+
+
+
+    #######
     for x in quarantined:
         x.doesKnow()
         x.doesDie()
-        if x.corona:
-            numCororna = numCororna + 1
-        if x.badC:
-            badPeople = badPeople + 1
         if not x.alive:
             quarantined.remove(x)
-            deads = deads + 1
-        if not x.corona:
-            quarantined.remove(x)
-            population.append(x)
+            deads = deads + 1        
+        else:
+            if x.corona:
+                numCororna = numCororna + 1
+                if x.badC:
+                    badPeople = badPeople + 1
+
+                    
+
+            else:
+                population.append(x)
+                quarantined.remove(x)
 
 
     #######
@@ -210,33 +236,34 @@ for days in range(numDays):
             population.remove(x)
             deads = deads + 1
 
-        try:
+        else:
+            if x.corona:
+                numCororna = numCororna + 1
+                if x.badC:
+                    badPeople = badPeople + 1
+
             if x.identified:
-                population.remove(x)
                 quarantined.append(x)
-        except:
-            pass
-        if x.corona:
-            numCororna = numCororna + 1
-        if x.badC:
-            badPeople = badPeople + 1
+                population.remove(x)
+
+
 
 
         #corona => effective
-        if x.corona and (not x.effective):
-            x.effective = True
+            if x.corona and (not x.effective):
+                x.effective = True
 
     ######
     #gathering data
     yaxis.append(numCororna)
     badConditions.append(badPeople)
     xaxis.append(days + 1)
-    dead.append(deads)
+    dead.append(deads)   
 
     for x in dead:
         totalDeath = totalDeath + x
     
-    alives.append(1000 - totalDeath)
+    alives.append(populationNumber - totalDeath)
     totalDeath = 0
 
 
@@ -246,12 +273,15 @@ for days in range(numDays):
     print("End of day " + str(days + 1))
 
 
+
 for x in dead:
     totalDeath = totalDeath + x
 
 print("Dead : " + str(totalDeath))
+
 ########
 #plotting
+
 plt.xlabel("Days")
 plt.ylabel("Infected")
 plt.title("Virus Spreading")
@@ -262,9 +292,4 @@ plt.bar(xaxis, dead, width = 1, color = 'red', label = "Dead")
 plt.grid(True)
 plt.legend()
 plt.show()
-
-
-
-
-###plot quarintined, dead, badC, 
 
