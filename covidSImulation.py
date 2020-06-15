@@ -12,8 +12,8 @@ chanceBadC = 0.7
 chanceWorse = 0.01
 chanceInfectCured = 0.1
 mortalRate = 0.2
-qurantine = False
-chanceQuarintine = 0.9
+qurantine = True
+chanceQuarintine = 0.999
 testing = False
 testAccuracy = 0.9
 testSize = 20
@@ -31,6 +31,7 @@ xaxis = []
 badConditions = []
 dead = []
 alives = []
+listOfIdentified = []
 totalDeath = 0
 
 class Person():
@@ -279,7 +280,8 @@ for days in range(numDays):
 
 
 
-
+    listOfIdentified.append(len(quarantined))
+    print(len(quarantined))
     ######
     #gathering data
     yaxis.append(numCororna)
@@ -310,6 +312,8 @@ print("Dead : " + str(totalDeath))
 ########
 #plotting
 
+plt.subplot(211)
+
 plt.xlabel("Days")
 plt.ylabel("Infected")
 plt.title("Virus Spreading")
@@ -317,6 +321,17 @@ plt.title("Virus Spreading")
 plt.bar(xaxis, yaxis, width=1, color="yellow", label = "Infected")
 plt.bar(xaxis, badConditions, width=1, color="orange", label = "Critical Condition")
 plt.bar(xaxis, dead, width = 1, color = 'red', label = "Dead")
+plt.grid(True)
+plt.legend()
+plt.xlim([0, numDays]);
+
+plt.subplot(212)
+plt.xlabel("Days")
+plt.bar(xaxis, listOfIdentified, width=1, color="gray", label = "Identified Daily")
+plt.bar(xaxis, dead, width = 1, color = 'red', label = "Dead")
+
+plt.xlim([0, numDays]);
+
 plt.grid(True)
 plt.legend()
 plt.show()
