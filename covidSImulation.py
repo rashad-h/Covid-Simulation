@@ -7,13 +7,18 @@ populationNumber =  1000  #int(input("Enter the Population..."))
 numDays =  100  #int(input("Enter the number of days..."))
 intInfected =  5  #int(input("Number of Initial infected people..."))
 numInGatherings =  4  #int(input("Number of people in gatherings..."))
-chanceInfect = 0.1  #int(input("Chance of infection with a one to one ineraction(In percents)..."))
-chanceBadC = 0.7
+primaryChanceInfect = 0.1  #int(input("Chance of infection with a one to one ineraction(In percents)..."))
+secondaryChanceInfect = 0.1
+chance1 = 0.1
+chance2 = 0.1
+percentDifferent = chance2 - chance1
+precentNotice = 0.025
+chanceBadC = 0.5
 chanceWorse = 0.01
-chanceInfectCured = 0.1
+chanceInfectCured = 0.09
 mortalRate = 0.2
 qurantine = True
-chanceQuarintine = 0.999
+chanceQuarintine = 0.9
 testing = False
 testAccuracy = 0.9
 testSize = 20
@@ -33,6 +38,7 @@ dead = []
 alives = []
 listOfIdentified = []
 totalDeath = 0
+neverInfected = 0
 
 class Person():
 
@@ -93,7 +99,7 @@ class Person():
 
 #######
 #Interacting with another person
-def infect(person1, person2):
+def infect(person1, person2, chanceInfect):
 
     if person2.effective == True:
 
@@ -123,11 +129,29 @@ def infect(person1, person2):
 
 #######
 #mettings in gatherings
-def meet(lst):
+def meet(lst, difference, warning):
     for x in lst:
         for y in lst:
             if (x != y) and (x.badC == False):
-                infect(x, y)
+
+
+                if (warning):
+                    if (difference < 0):
+                        if (difference > -0.5):
+                        
+                            infect(x, y, ((difference/ (-0.5))* percentDifferent) + chance1)
+
+
+
+                        else:
+                            infect(x, y, chance2)
+
+                    else:
+                        infect(x, y, chance1)
+
+                else:
+                    infect(x, y, primaryChanceInfect)
+
     return lst
 
         
@@ -167,6 +191,26 @@ for days in range(numDays):
         break
 
 
+
+
+
+    try:
+        if((float(numCororna) / float(len(population))) > precentNotice):
+            warning = True
+
+        else:
+            warning = False
+
+
+    except:
+        warning = False
+
+    try:
+        dailyDifference = ((float(listOfIdentified[days -1]) - float(listOfIdentified[days - 2])) / float(listOfIdentified[days - 2]))
+
+    except:
+        dailyDifference = 0
+
     numCororna = 0
     badPeople = 0
 
@@ -182,7 +226,7 @@ for days in range(numDays):
         
         #print(x)
         
-        gathering = meet(gathering)
+        gathering = meet(gathering, dailyDifference, warning)
         helpPop = helpPop + gathering
         gathering[:] = []
 
@@ -192,6 +236,21 @@ for days in range(numDays):
     deads = 0
 
     #checks
+    if testing:
+        try:
+            for x in range(testSize):
+                y = rdm.randint(0, testSize - 1)
+                if population[y].corona and not population[y].identified:
+                    if rdm.random() < testAccuracy:
+                        population[y].identified = True
+
+                
+
+        except:
+            pass
+
+
+
     #######
     for x in population:
         x.doesKnow()
@@ -249,6 +308,10 @@ for days in range(numDays):
     helpMe[:] = []
 
 
+
+
+
+    listOfIdentified.append(int(len(preQuarintine)))
     ########
     quarantined = quarantined + preQuarintine
     preQuarintine[:] = []
@@ -256,22 +319,6 @@ for days in range(numDays):
 
     ########
 
-    if testing:
-        try:
-            for x in range(testSize):
-                y = rdm.randint(0, testSize - 1)
-                if population[y].corona and not population[y].identified:
-                    if rdm.random() < testAccuracy:
-                        population[y].identified = True
-
-                
-
-        except:
-            for x in range(len(population)):
-                y = rdm.randint(0, len(population) - 1)
-                if population[y].corona and not population[y].identified:
-                    if rdm.random() < testAccuracy:
-                        population[y].identified = True
 
 
 
@@ -280,13 +327,13 @@ for days in range(numDays):
 
 
 
-    listOfIdentified.append(len(quarantined))
-    print(len(quarantined))
+
+
     ######
     #gathering data
     yaxis.append(numCororna)
     badConditions.append(badPeople)
-    xaxis.append(days + 1)
+    xaxis.append(days)
     dead.append(deads)   
 
     for x in dead:
@@ -304,10 +351,16 @@ for days in range(numDays):
 
 
 
+for x in population:
+    if x.isCured == False:
+        neverInfected = neverInfected + 1
+
+
 for x in dead:
     totalDeath = totalDeath + x
-
-print("Dead : " + str(totalDeath))
+print(populationNumber)
+print("Dead : " + str(totalDeath) +"   "+ str((float(totalDeath)/ float(populationNumber))*100) + "%")
+print("Never Infected : " + str(neverInfected) +"   "+ str((float(neverInfected)/ float(populationNumber))*100) + "%")
 
 ########
 #plotting
@@ -323,14 +376,14 @@ plt.bar(xaxis, badConditions, width=1, color="orange", label = "Critical Conditi
 plt.bar(xaxis, dead, width = 1, color = 'red', label = "Dead")
 plt.grid(True)
 plt.legend()
-plt.xlim([0, numDays]);
+plt.xlim([0, numDays + 1]);
 
 plt.subplot(212)
 plt.xlabel("Days")
 plt.bar(xaxis, listOfIdentified, width=1, color="gray", label = "Identified Daily")
 plt.bar(xaxis, dead, width = 1, color = 'red', label = "Dead")
 
-plt.xlim([0, numDays]);
+plt.xlim([0, numDays +1]);
 
 plt.grid(True)
 plt.legend()
