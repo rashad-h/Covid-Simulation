@@ -8,7 +8,6 @@ numDays =  100  #int(input("Enter the number of days..."))
 intInfected =  5  #int(input("Number of Initial infected people..."))
 numInGatherings =  4  #int(input("Number of people in gatherings..."))
 primaryChanceInfect = 0.1  #int(input("Chance of infection with a one to one ineraction(In percents)..."))
-secondaryChanceInfect = 0.1
 chance1 = 0.1
 chance2 = 0.1
 percentDifferent = chance2 - chance1
@@ -16,7 +15,7 @@ precentNotice = 0.025
 chanceBadC = 0.5
 chanceWorse = 0.01
 chanceInfectCured = 0.09
-mortalRate = 0.2
+mortalRate = 0.5
 qurantine = True
 chanceQuarintine = 0.9
 testing = False
@@ -362,6 +361,30 @@ print(populationNumber)
 print("Dead : " + str(totalDeath) +"   "+ str((float(totalDeath)/ float(populationNumber))*100) + "%")
 print("Never Infected : " + str(neverInfected) +"   "+ str((float(neverInfected)/ float(populationNumber))*100) + "%")
 
+
+#######
+#Calculating Variance
+# x = xaxis , f = badConditions
+
+
+multiples = []
+for x in xaxis:
+    multiples.append(x * badConditions[x])
+
+sumOfMultiples = sum(multiples)
+
+mean = float(sumOfMultiples) / float(sum(badConditions)) 
+
+listOfSpecial = []
+for x in xaxis:
+    value = ((x - mean) * (x - mean))
+    listOfSpecial.append(value * badConditions[x])
+
+variance = float(sum(listOfSpecial)) / float(sum(badConditions))
+
+
+print("Variance : " + str(variance)) + "    Max : " + str(max(badConditions))
+
 ########
 #plotting
 
@@ -373,6 +396,7 @@ plt.title("Virus Spreading")
 #plt.bar(xaxis, alives, width=1, color="green", label = "Alive")
 plt.bar(xaxis, yaxis, width=1, color="yellow", label = "Infected")
 plt.bar(xaxis, badConditions, width=1, color="orange", label = "Critical Condition")
+
 plt.bar(xaxis, dead, width = 1, color = 'red', label = "Dead")
 plt.grid(True)
 plt.legend()
